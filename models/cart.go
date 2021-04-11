@@ -40,15 +40,31 @@ func AddProductToCart(cartId uint, productId uint, qty int64) error {
 		return err
 	}
 
-	var cart Cart
-	db.Find(&cart, cartId)
-	db.Preload("Product").Find(&cart.Orders)
+	exists, err := ProductExists(productId)
+	if err != nil {
+		return err
+	}
+	if exists {
+		var cart Cart
+		db.Find(&cart, cartId)
+		db.Preload("Product").Find(&cart.Orders)
 
-	for _, v := range cart.Orders {
-		if productId == v.ProductID {
-			v.Quantity = v.Quantity + qty
-			db.Save(&v)
+		for _, v := range cart.Orders {
+			if productId == v.ProductID {
+				v.Quantity = v.Quantity + qty
+				db.Save(&v)
+
+				return nil
+			}
 		}
+
+		order, err := CreateOrder(productId)
+		if err != nil {
+			return err
+		}
+
+		db.Model(&cart).Association("DiscountCoupons").Append(&order)
+
 	}
 
 	return nil
