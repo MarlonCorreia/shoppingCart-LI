@@ -13,7 +13,7 @@ type Product struct {
 type DiscountCoupon struct {
 	gorm.Model
 	ID    uint
-	Price float32
+	Price float64
 	Name  string
 }
 
