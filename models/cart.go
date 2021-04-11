@@ -63,7 +63,7 @@ func AddProductToCart(cartId uint, productId uint, qty int64) error {
 			return err
 		}
 
-		db.Model(&cart).Association("DiscountCoupons").Append(&order)
+		db.Model(&cart).Association("Orders").Append(&order)
 
 	}
 
