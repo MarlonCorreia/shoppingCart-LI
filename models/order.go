@@ -20,3 +20,13 @@ func CreateOrder(productId uint) (Order, error) {
 	return order, nil
 
 }
+
+func DeleteOrder(order *Order) error {
+	db, err := config.GetConnection()
+	if err != nil {
+		return err
+	}
+	db.Delete(order)
+
+	return nil
+}
