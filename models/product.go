@@ -75,3 +75,18 @@ func DeleteProduct(productId uint) error {
 
 	return nil
 }
+
+func ProductExists(productId uint) (bool, error) {
+	db, err := config.GetConnection()
+	if err != nil {
+		return false, err
+	}
+
+	var product Product
+	err = db.First(&product, productId).Error
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
