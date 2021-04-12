@@ -20,4 +20,11 @@ func CreateRouters(r *gin.Engine) {
 		users.PUT("/create", controllers.CreateUser)
 		users.POST("/login", controllers.LoginUser)
 	}
+
+	product := r.Group("/product")
+	{
+		product.GET("/all", controllers.GetProducts)
+		product.PUT("/insert/:id", controllers.PutProduct)
+		product.GET("/get/:id", controllers.GetProduct)
+	}
 }
