@@ -4,10 +4,8 @@ import "shoppingCart-LI/config"
 
 func CreateOrder(productId uint) (Order, error) {
 	var order Order
-	db, err := config.GetConnection()
-	if err != nil {
-		return order, nil
-	}
+	db := config.GetConnection()
+
 	prod, err := GetProduct(productId)
 	if err != nil {
 		return order, err
@@ -22,10 +20,8 @@ func CreateOrder(productId uint) (Order, error) {
 }
 
 func DeleteOrder(order *Order) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
+
 	db.Delete(order)
 
 	return nil

@@ -8,10 +8,8 @@ import (
 )
 
 func CreateUser(name string, password string) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
+
 	cart, err := CreateCart()
 	if err != nil {
 		return err
@@ -30,13 +28,10 @@ func CreateUser(name string, password string) error {
 }
 
 func GetUserToken(name string, password string) (string, error) {
-	db, err := config.GetConnection()
-	if err != nil {
-		return "", err
-	}
+	db := config.GetConnection()
 
 	var u User
-	err = db.Where("name = ? AND password = ?", name, password).First(&u).Error
+	err := db.Where("name = ? AND password = ?", name, password).First(&u).Error
 	if err != nil {
 		return "", nil
 	}
@@ -45,14 +40,22 @@ func GetUserToken(name string, password string) (string, error) {
 
 }
 
-func CheckUserExists(name string, password string) (bool, error) {
-	db, err := config.GetConnection()
+func CheckTokenExists(token string) (bool, error) {
+	db := config.GetConnection()
+
+	err := db.Where("token = ?", token).First(&User{}).Error
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 
+	return true, nil
+}
+
+func CheckUserExists(name string, password string) (bool, error) {
+	db := config.GetConnection()
+
 	var u User
-	err = db.Where("name = ? AND password = ?", name, password).First(&u).Error
+	err := db.Where("name = ? AND password = ?", name, password).First(&u).Error
 	if err != nil {
 		return false, err
 	}

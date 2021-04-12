@@ -7,10 +7,8 @@ import (
 func CreateCart() (Cart, error) {
 	var cart Cart
 
-	db, err := config.GetConnection()
-	if err != nil {
-		return cart, err
-	}
+	db := config.GetConnection()
+
 	db.Create(&cart)
 
 	return cart, nil
@@ -18,12 +16,9 @@ func CreateCart() (Cart, error) {
 
 func GetCart(cartId uint) (Cart, error) {
 	var cart Cart
-	db, err := config.GetConnection()
-	if err != nil {
-		return cart, err
-	}
+	db := config.GetConnection()
 
-	err = db.First(&cart, cartId).Error
+	err := db.First(&cart, cartId).Error
 	if err != nil {
 		return cart, err
 	}
@@ -35,10 +30,7 @@ func GetCart(cartId uint) (Cart, error) {
 }
 
 func AddProductToCart(cartId uint, productId uint, qty int64) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
 
 	exists, err := ProductExists(productId)
 	if err != nil {
@@ -71,15 +63,12 @@ func AddProductToCart(cartId uint, productId uint, qty int64) error {
 }
 
 func CleanCart(cartID uint) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
 
 	var c Cart
 	db.Preload("Product").Find(&c.Orders)
 	db.Preload("DiscountCoupons").Find(&c)
-	err = db.Find(&c, cartID).Error
+	err := db.Find(&c, cartID).Error
 	if err != nil {
 		return err
 	}

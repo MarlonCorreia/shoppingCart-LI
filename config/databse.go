@@ -5,26 +5,26 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	dsn string = "host=localhost user=marlon password=postgres dbname=postgres port=5432 sslmode=disable"
-	db  *gorm.DB
-)
+var DB *gorm.DB
 
-func GetConnection() (*gorm.DB, error) {
+func Init() (*gorm.DB, error) {
+	dsn := "host=localhost user=marlon password=postgres dbname=postgres port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return db, nil
+	DB = db
+
+	return DB, nil
+}
+
+func GetConnection() *gorm.DB {
+	return DB
 }
 
 func ApllyMigrations(models []interface{}) error {
-	db, err := GetConnection()
-	if err != nil {
-		return err
-	}
 	for _, v := range models {
-		db.AutoMigrate(&v)
+		DB.AutoMigrate(&v)
 	}
 
 	return nil

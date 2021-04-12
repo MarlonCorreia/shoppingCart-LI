@@ -3,10 +3,7 @@ package models
 import "shoppingCart-LI/config"
 
 func CreateProduct(name string, price float64, status string) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
 
 	product := Product{
 		Name:   name,
@@ -21,13 +18,9 @@ func CreateProduct(name string, price float64, status string) error {
 
 func GetProduct(productId uint) (Product, error) {
 	var product Product
-	db, err := config.GetConnection()
+	db := config.GetConnection()
 
-	if err != nil {
-		return product, err
-	}
-
-	err = db.First(&product, productId).Error
+	err := db.First(&product, productId).Error
 	if err != nil {
 		return product, err
 	}
@@ -36,13 +29,10 @@ func GetProduct(productId uint) (Product, error) {
 }
 
 func UpdateProduct(productId uint, product Product) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
 
 	var updatedProduct Product
-	err = db.First(&updatedProduct, productId).Error
+	err := db.First(&updatedProduct, productId).Error
 	if err != nil {
 		return err
 	}
@@ -63,12 +53,9 @@ func UpdateProduct(productId uint, product Product) error {
 }
 
 func DeleteProduct(productId uint) error {
-	db, err := config.GetConnection()
-	if err != nil {
-		return err
-	}
+	db := config.GetConnection()
 
-	err = db.Delete(&Product{}, productId).Error
+	err := db.Delete(&Product{}, productId).Error
 	if err != nil {
 		return err
 	}
@@ -77,13 +64,10 @@ func DeleteProduct(productId uint) error {
 }
 
 func ProductExists(productId uint) (bool, error) {
-	db, err := config.GetConnection()
-	if err != nil {
-		return false, err
-	}
+	db := config.GetConnection()
 
 	var product Product
-	err = db.First(&product, productId).Error
+	err := db.First(&product, productId).Error
 	if err != nil {
 		return false, nil
 	}
