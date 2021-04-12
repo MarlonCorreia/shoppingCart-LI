@@ -2,15 +2,16 @@ package models
 
 import "shoppingCart-LI/config"
 
-func CreateProduct(name string, price float64, status string) error {
+func CreateProduct(id uint, name string, price float64, status string) error {
 	db := config.GetConnection()
 
 	product := Product{
+		ID:     id,
 		Name:   name,
 		Status: status,
 		Price:  price,
 	}
-	db.Create(product)
+	db.Create(&product)
 
 	return nil
 
@@ -26,6 +27,19 @@ func GetProduct(productId uint) (Product, error) {
 	}
 
 	return product, nil
+}
+
+func GetAllProducts() ([]Product, error) {
+	db := config.GetConnection()
+
+	var products []Product
+
+	err := db.Find(&products).Error
+	if err != nil {
+		return products, nil
+	}
+
+	return products, nil
 }
 
 func UpdateProduct(productId uint, product Product) error {
