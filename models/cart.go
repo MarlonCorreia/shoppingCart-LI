@@ -85,7 +85,10 @@ func CleanCart(cartID uint) error {
 	}
 
 	for _, v := range c.Orders {
-		db.Delete(&v)
+		err = DeleteOrder(&v)
+		if err != nil {
+			return err
+		}
 	}
 	db.Delete(&c.DiscountCoupons)
 
