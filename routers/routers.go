@@ -16,8 +16,8 @@ func CreateRouters(r *gin.Engine) {
 
 	users := r.Group("/user")
 	{
-		users.GET("/:id", controllers.GetUser)
-		users.POST("/create", controllers.CreateUser)
+		users.GET("/get/:id", controllers.GetUser)
+		users.PUT("/create", controllers.CreateUser)
 		users.POST("/login", controllers.LoginUser)
 	}
 }
