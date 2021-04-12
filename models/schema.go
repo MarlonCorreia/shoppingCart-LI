@@ -3,11 +3,11 @@ package models
 import "gorm.io/gorm"
 
 type Product struct {
-	gorm.Model
-	ID     uint
-	Name   string
-	Price  float64
-	Status string
+	gorm.Model `json:"-"`
+	ID         uint
+	Name       string
+	Price      float64
+	Status     string
 }
 
 type DiscountCoupon struct {
