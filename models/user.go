@@ -27,6 +27,20 @@ func CreateUser(name string, password string) error {
 	return nil
 }
 
+func GetUser(userId uint) (User, error) {
+	db := config.GetConnection()
+
+	var user User
+	err := db.First(&user, userId).Error
+	db.Preload("Cart").Find(&user)
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func GetUserToken(name string, password string) (string, error) {
 	db := config.GetConnection()
 
