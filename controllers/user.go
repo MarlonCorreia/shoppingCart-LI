@@ -1,25 +1,101 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"shoppingCart-LI/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
+type User struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 func GetUser(c *gin.Context) {
+	paramId := c.Param("id")
+	userId, _ := strconv.ParseUint(paramId, 10, 32)
+	user, err := models.GetUser(uint(userId))
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "user not found",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"user": "name",
+		"user": user,
 	})
 }
 
 func CreateUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"user": "created",
-	})
+	message, _ := ioutil.ReadAll(c.Request.Body)
+	var u User
+
+	json.Unmarshal(message, &u)
+
+	if u.Name == "" || u.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "bad payload, check docs",
+		})
+	} else {
+		err := models.CreateUser(u.Name, u.Password)
+		if err != nil {
+			fmt.Println(err)
+
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "problem with user creation",
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "Creation suceeded!",
+				"user":    u,
+			})
+		}
+	}
+
 }
 
 func LoginUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"login": "sucess",
-	})
+	message, _ := ioutil.ReadAll(c.Request.Body)
+	var u User
+
+	json.Unmarshal(message, &u)
+
+	if u.Name == "" || u.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "login failed, empty fields!",
+		})
+		return
+	}
+
+	v, err := models.CheckUserExists(u.Name, u.Password)
+	if err != nil || !v {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "login failed, user does not exists!",
+		})
+		return
+	}
+
+	token, err := models.GetUserToken(u.Name, u.Password)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "login failed, server problem!",
+		})
+		return
+	} else {
+
+		c.JSON(http.StatusOK, gin.H{
+			"token": token,
+		})
+		return
+	}
+
 }
