@@ -20,9 +20,9 @@ type DiscountCoupon struct {
 type Order struct {
 	gorm.Model `json:"-"`
 	ID         uint
-	ProductID  uint
+	ProductID  uint `json:"_"`
 	Quantity   int64
-	Product    Product
+	Product    Product `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Cart struct {
