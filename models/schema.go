@@ -39,5 +39,5 @@ type User struct {
 	Password   string
 	Token      string
 	CartID     uint
-	Cart       Cart
+	Cart       Cart `json:"-"`
 }
