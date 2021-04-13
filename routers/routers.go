@@ -11,7 +11,7 @@ func CreateRouters(r *gin.Engine) {
 	api := r.Group("/api")
 	{
 		api.GET("/cart/:id", controllers.GetCart)
-		api.POST("/cart/:id", controllers.PostCart)
+		api.POST("/cart/:id/:productId", controllers.PostCart)
 	}
 
 	users := r.Group("/user")
@@ -26,5 +26,6 @@ func CreateRouters(r *gin.Engine) {
 		product.GET("/all", controllers.GetProducts)
 		product.PUT("/insert/:id", controllers.PutProduct)
 		product.GET("/get/:id", controllers.GetProduct)
+		product.DELETE("/delete/:id", controllers.DeleteProduct)
 	}
 }
