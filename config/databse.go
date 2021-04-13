@@ -7,15 +7,16 @@ import (
 
 var DB *gorm.DB
 
-func Init() (*gorm.DB, error) {
+func Init() error {
 	dsn := "host=localhost user=marlon password=postgres dbname=postgres port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	DB = db
 
-	return DB, nil
+	return nil
+
 }
 
 func GetConnection() *gorm.DB {
@@ -24,7 +25,7 @@ func GetConnection() *gorm.DB {
 
 func ApllyMigrations(models []interface{}) error {
 	for _, v := range models {
-		DB.AutoMigrate(&v)
+		DB.AutoMigrate(v)
 	}
 
 	return nil
