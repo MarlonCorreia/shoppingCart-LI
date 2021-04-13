@@ -12,7 +12,7 @@ func CreateOrder(productId uint) (Order, error) {
 	if err != nil {
 		return order, err
 	}
-
+	order.Quantity = 1
 	order.Product = prod
 	order.ProductID = prod.ID
 	db.Create(&order)
