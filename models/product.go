@@ -68,15 +68,17 @@ func UpdateProduct(productId uint, product Product) error {
 
 func DeleteProduct(productId uint) error {
 	db := config.GetConnection()
-	err := db.Unscoped().Delete(&Product{}, productId).Error
+
+	err := DeleteOrdersByProductId(productId)
 	if err != nil {
 		return err
 	}
 
-	err = DeleteOrdersByProductId(productId)
+	err = db.Unscoped().Delete(&Product{}, productId).Error
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
