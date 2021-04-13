@@ -42,7 +42,7 @@ func AddProductToCart(cartId uint, productId uint, qty int64) error {
 		db.Preload("Product").Find(&cart.Orders)
 
 		for _, v := range cart.Orders {
-			if productId == v.ProductID {
+			if productId == v.Product.ID {
 				v.Quantity = v.Quantity + qty
 				db.Save(&v)
 
