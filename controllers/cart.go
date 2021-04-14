@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"shoppingCart-LI/models"
 	"strconv"
@@ -89,10 +88,18 @@ func PostCart(c *gin.Context) {
 
 	paramCartId := c.Param("id")
 	paramProductId := c.Param("productId")
-	fmt.Println("cartid: ", paramCartId, "productid: ", paramProductId)
+	queryAmount := c.Query("amount")
 
 	productId, _ := strconv.ParseUint(paramProductId, 10, 32)
 	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
+	amount, _ := strconv.Atoi(queryAmount)
+
+	if amount <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "amount must be greater than zero",
+		})
+		return
+	}
 
 	exists, err := models.ProductExists(uint(productId))
 	if err != nil {
@@ -111,7 +118,7 @@ func PostCart(c *gin.Context) {
 			return
 		}
 
-		err = models.AddProductToCart(uint(cartId), uint(productId), 1)
+		err = models.AddProductToCart(uint(cartId), uint(productId), int64(amount))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "server error",
@@ -128,6 +135,172 @@ func PostCart(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": "product not found",
 	})
+}
+
+func DeleteCartProduct(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	paramCartId := c.Param("id")
+	paramProductId := c.Param("productId")
+	queryAmount := c.Query("amount")
+
+	productId, _ := strconv.ParseUint(paramProductId, 10, 32)
+	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
+	amount, _ := strconv.Atoi(queryAmount)
+
+	if amount <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "amount must be greater than zero",
+		})
+		return
+	}
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no token provided",
+		})
+		return
+	}
+	authorized, err := models.CheckTokenExists(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "server problem",
+		})
+		return
+	}
+
+	if authorized {
+		exists, _ := models.ProductExists(uint(productId))
+		if exists {
+			err := models.RemoveProductFromnCart(uint(productId), uint(cartId), int64(amount))
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "cart not found",
+				})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"message": "product removed",
+			})
+			return
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"message": "not authorized",
+	})
+}
+
+func PostCouponCart(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	paramCartId := c.Param("id")
+	paramCouponId := c.Param("couponId")
+
+	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
+	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
+
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no token provided",
+		})
+		return
+	}
+
+	authorized, err := models.CheckTokenExists(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "server problem",
+		})
+		return
+	}
+
+	if authorized {
+		cart, err := models.GetCart(uint(cartId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "cart not found",
+			})
+			return
+		}
+
+		coupon, err := models.GetDiscountCoupon(uint(couponId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "coupon not found",
+			})
+			return
+		}
+
+		models.AddDiscountCouponToCart(&cart, &coupon)
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "coupon added to cart",
+		})
+		return
+	}
+
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"message": "not authorized",
+	})
+}
+
+func DeleteCouponCart(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	paramCartId := c.Param("id")
+	paramCouponId := c.Param("couponId")
+
+	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
+	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
+
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no token provided",
+		})
+		return
+	}
+
+	authorized, err := models.CheckTokenExists(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "server problem",
+		})
+		return
+	}
+
+	if authorized {
+		cart, err := models.GetCart(uint(cartId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "cart not found",
+			})
+			return
+		}
+
+		coupon, err := models.GetDiscountCoupon(uint(couponId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "coupon not found",
+			})
+			return
+		}
+
+		models.DeleteDiscountCouponFromCart(&cart, &coupon)
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "coupon deleted",
+		})
+		return
+
+	}
+
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"message": "not authorized",
+	})
+
 }
 
 func cartResponse(cart models.Cart) ResponseCart {
@@ -148,8 +321,11 @@ func cartResponse(cart models.Cart) ResponseCart {
 	}
 
 	discountedPrice := discountedPrice(cart.DiscountCoupons)
-	if total == 0 {
-		discountedPrice = 0
+	if total-discountedPrice <= 0 {
+		discountedPrice = total
+		total = 0
+	} else {
+		total = total - discountedPrice
 	}
 
 	responseCart := ResponseCart{
@@ -157,7 +333,7 @@ func cartResponse(cart models.Cart) ResponseCart {
 		Orders:          responseOrders,
 		Coupon:          cart.DiscountCoupons,
 		DiscountedPrice: discountedPrice,
-		Total:           total - discountedPrice,
+		Total:           total,
 	}
 
 	return responseCart
