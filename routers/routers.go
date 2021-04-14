@@ -34,7 +34,7 @@ func CreateRouters(r *gin.Engine) {
 			product.DELETE("/:id", controllers.DeleteProduct)
 		}
 
-		coupons := api.Group("/coupons")
+		coupons := api.Group("/coupon")
 		{
 			coupons.GET("/", controllers.GetAllCoupons)
 			coupons.PUT("/:id", controllers.PutCoupon)
