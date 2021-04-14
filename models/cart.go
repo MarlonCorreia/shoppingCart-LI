@@ -62,6 +62,35 @@ func AddProductToCart(cartId uint, productId uint, qty int64) error {
 	return nil
 }
 
+func RemoveProductFromnCart(productId uint, cartId uint, quantitty int64) error {
+	db := config.GetConnection()
+
+	var cart Cart
+
+	err := db.First(&cart, cartId).Error
+	db.Preload("Product").Find(&cart.Orders)
+
+	if err != nil {
+		return err
+	}
+
+	for _, v := range cart.Orders {
+		if v.Product.ID == productId {
+			v.Quantity = v.Quantity - quantitty
+
+			if v.Quantity <= 0 {
+				DeleteOrder(&v)
+
+				return nil
+			}
+
+			db.Save(&v)
+		}
+	}
+
+	return nil
+}
+
 func CleanCart(cartID uint) error {
 	db := config.GetConnection()
 
