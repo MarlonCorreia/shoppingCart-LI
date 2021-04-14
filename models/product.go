@@ -44,10 +44,16 @@ func GetAllProducts() ([]Product, error) {
 func UpdateProduct(product *Product, updateTo Product) {
 	db := config.GetConnection()
 
-	product.Name = updateTo.Name
-	product.Price = updateTo.Price
-	product.Status = updateTo.Status
+	if updateTo.Name != "" {
+		product.Name = updateTo.Name
+	}
+	if updateTo.Price != 0 {
+		product.Price = updateTo.Price
 
+	}
+	if updateTo.Status != "" {
+		product.Status = updateTo.Status
+	}
 	db.Save(&product)
 
 	return
