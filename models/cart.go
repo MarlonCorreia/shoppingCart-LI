@@ -84,3 +84,18 @@ func CleanCart(cartID uint) error {
 	db.Save(&c)
 	return nil
 }
+
+func AddDiscountCouponToCart(cart *Cart, coupon *DiscountCoupon) {
+	db := config.GetConnection()
+	db.Preload("DiscountCoupons").Find(&cart)
+
+	db.Model(cart).Association("DiscountCoupons").Append(coupon)
+
+}
+
+func DeleteDiscountCouponFromCart(cart *Cart, coupon *DiscountCoupon) {
+	db := config.GetConnection()
+	db.Preload("DiscountCoupons").Find(&cart)
+
+	db.Model(cart).Association("DiscountCoupons").Delete(coupon)
+}
