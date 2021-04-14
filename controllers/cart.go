@@ -33,7 +33,7 @@ func GetCart(c *gin.Context) {
 		return
 	}
 	paramcartId := c.Param("id")
-	cartId, err := strconv.ParseUint(paramcartId, 10, 64)
+	cartId, _ := strconv.ParseUint(paramcartId, 10, 64)
 
 	authorized := models.CheckTokenExists(token, uint(cartId))
 	if authorized {
@@ -142,15 +142,8 @@ func DeleteCartProduct(c *gin.Context) {
 		})
 		return
 	}
-	authorized, err := models.CheckTokenExists(token, uint(cartId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server problem",
-		})
-		return
-	}
 
-	if authorized {
+	if models.CheckTokenExists(token, uint(cartId)) {
 
 		cart, err := models.GetCart(uint(cartId))
 		if err != nil {
@@ -203,15 +196,7 @@ func PostCouponCart(c *gin.Context) {
 		return
 	}
 
-	authorized, err := models.CheckTokenExists(token, uint(cartId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server problem",
-		})
-		return
-	}
-
-	if authorized {
+	if models.CheckTokenExists(token, uint(cartId)) {
 		cart, err := models.GetCart(uint(cartId))
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -256,15 +241,7 @@ func DeleteCouponCart(c *gin.Context) {
 		return
 	}
 
-	authorized, err := models.CheckTokenExists(token, uint(cartId))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server problem",
-		})
-		return
-	}
-
-	if authorized {
+	if models.CheckTokenExists(token, uint(cartId)) {
 		cart, err := models.GetCart(uint(cartId))
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
