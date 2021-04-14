@@ -4,17 +4,17 @@ import "gorm.io/gorm"
 
 type Product struct {
 	gorm.Model `json:"-"`
-	ID         uint
-	Name       string
-	Price      float64
-	Status     string
+	ID         uint    `json:"id"`
+	Name       string  `json:"name"`
+	Price      float64 `json:"price"`
+	Status     string  `json:"status"`
 }
 
 type DiscountCoupon struct {
 	gorm.Model `json:"-"`
-	ID         uint
-	Price      float64
-	Name       string
+	ID         uint    `json:"id"`
+	Price      float64 `json:"discount"`
+	Name       string  `json:"name"`
 }
 
 type Order struct {
@@ -34,10 +34,10 @@ type Cart struct {
 
 type User struct {
 	gorm.Model `json:"-"`
-	ID         uint
-	Name       string
-	Password   string
-	Token      string
-	CartID     uint
-	Cart       Cart `json:"-"`
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Password   string `json:"password"`
+	Token      string `json:"-"`
+	CartID     uint   `json:"cartId"`
+	Cart       Cart   `json:"-"`
 }
