@@ -2,26 +2,38 @@ package models
 
 import "shoppingCart-LI/config"
 
-func CreateDiscountCoupon(name string, price float64) error {
+func GetDiscountCoupon(couponId uint) (DiscountCoupon, error) {
+	var coupon DiscountCoupon
 	db := config.GetConnection()
 
-	discountCoupon := DiscountCoupon{
-		Name:  name,
-		Price: price,
+	err := db.First(&coupon, couponId).Error
+	if err != nil {
+		return coupon, err
 	}
 
-	db.Create(&discountCoupon)
-
-	return nil
+	return coupon, nil
 }
 
-func DeleteDiscountCoupon(discountCouponId uint) error {
+func GetallDiscountCoupon() []DiscountCoupon {
+	var coupons []DiscountCoupon
 	db := config.GetConnection()
 
-	err := db.Delete(&DiscountCoupon{}, discountCouponId).Error
-	if err != nil {
-		return err
-	}
+	db.Find(&coupons)
 
-	return nil
+	return coupons
+}
+
+func CreateDiscountCoupon(coupon DiscountCoupon) {
+	db := config.GetConnection()
+
+	db.Create(&coupon)
+
+	return
+}
+
+func DeleteDiscountCoupon(discountCoupon *DiscountCoupon) {
+	db := config.GetConnection()
+	db.Unscoped().Delete(discountCoupon)
+
+	return
 }
