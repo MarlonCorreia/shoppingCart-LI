@@ -82,7 +82,7 @@ func CleanCart(cart *Cart) {
 	}
 
 	for _, v := range cart.DiscountCoupons {
-		DeleteDiscountCoupon(&v)
+		DeleteDiscountCouponFromCart(cart, &v)
 	}
 
 	db.Save(&cart)

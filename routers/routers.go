@@ -13,6 +13,7 @@ func CreateRouters(r *gin.Engine) {
 		cart := api.Group("/cart")
 		{
 			cart.GET("/:id", controllers.GetCart)
+			cart.DELETE("/:id", controllers.DeleteCart)
 			cart.POST("/:id/product/:productId", controllers.PostCart)
 			cart.DELETE("/:id/product/:productId", controllers.DeleteCartProduct)
 			cart.POST("/:id/coupon/:couponId", controllers.PostCouponCart)

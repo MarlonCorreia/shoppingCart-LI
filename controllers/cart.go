@@ -126,6 +126,26 @@ func PostCart(c *gin.Context) {
 
 }
 
+func DeleteCart(c *gin.Context) {
+	paramId := c.Param("id")
+
+	cartId, _ := strconv.ParseUint(paramId, 0, 32)
+
+	cart, err := models.GetCart(uint(cartId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "cart not found",
+		})
+		return
+	}
+
+	models.CleanCart(&cart)
+	c.JSON(http.StatusOK, gin.H{
+		"cart": cart,
+	})
+
+}
+
 func DeleteCartProduct(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	paramCartId := c.Param("id")
