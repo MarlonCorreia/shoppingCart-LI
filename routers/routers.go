@@ -13,10 +13,10 @@ func CreateRouters(r *gin.Engine) {
 		cart := api.Group("/cart")
 		{
 			cart.GET("/:id", controllers.GetCart)
-			cart.POST("/:id/:productId", controllers.PostCart)
-			cart.DELETE("/:id/:productId", controllers.DeleteCartProduct)
-			cart.POST("/:id/coupon/:id", controllers.PostCouponCart)
-			cart.DELETE("/:id/coupon/:id", controllers.DeleteCouponCart)
+			cart.POST("/:id/product/:productId", controllers.PostCart)
+			cart.DELETE("/:id/product/:productId", controllers.DeleteCartProduct)
+			cart.POST("/:id/coupon/:couponId", controllers.PostCouponCart)
+			cart.DELETE("/:id/coupon/:couponId", controllers.DeleteCouponCart)
 		}
 
 		user := api.Group("/user")
