@@ -10,13 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type product struct {
-	ID     uint    `json:"id"`
-	Name   string  `json:"name"`
-	Price  float64 `json:"price"`
-	Status string  `json:"status"`
-}
-
 func GetProducts(c *gin.Context) {
 	products, err := models.GetAllProducts()
 	if err != nil {
@@ -67,7 +60,7 @@ func PutProduct(c *gin.Context) {
 	}
 
 	message, _ := ioutil.ReadAll(c.Request.Body)
-	var p product
+	var p models.Product
 	json.Unmarshal(message, &p)
 
 	if p.Name == "" || p.Status == "" || p.Price == 0 {
@@ -91,6 +84,29 @@ func PutProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product created",
 		"product": p,
+	})
+
+}
+
+func PostProduct(c *gin.Context) {
+	paramId := c.Param("id")
+	productId, _ := strconv.ParseUint(paramId, 10, 32)
+
+	message, _ := ioutil.ReadAll(c.Request.Body)
+
+	var p models.Product
+	json.Unmarshal(message, &p)
+
+	product, err := models.GetProduct(uint(productId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
+		})
+		return
+	}
+	models.UpdateProduct(&product, p)
+	c.JSON(http.StatusOK, gin.H{
+		"product": product,
 	})
 
 }

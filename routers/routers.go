@@ -31,6 +31,7 @@ func CreateRouters(r *gin.Engine) {
 		{
 			product.GET("/", controllers.GetProducts)
 			product.GET("/:id", controllers.GetProduct)
+			product.POST("/:id", controllers.PostProduct)
 			product.PUT("/:id", controllers.PutProduct)
 			product.DELETE("/:id", controllers.DeleteProduct)
 		}
