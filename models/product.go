@@ -2,7 +2,7 @@ package models
 
 import "shoppingCart-LI/config"
 
-func CreateProduct(id uint, name string, price float64, status string) error {
+func CreateProduct(id uint, name string, price float64, status string) {
 	db := config.GetConnection()
 
 	product := Product{
@@ -13,8 +13,7 @@ func CreateProduct(id uint, name string, price float64, status string) error {
 	}
 	db.Create(&product)
 
-	return nil
-
+	return
 }
 
 func GetProduct(productId uint) (Product, error) {
@@ -42,54 +41,23 @@ func GetAllProducts() ([]Product, error) {
 	return products, nil
 }
 
-func UpdateProduct(productId uint, product Product) error {
+func UpdateProduct(product *Product, updateTo Product) {
 	db := config.GetConnection()
 
-	var updatedProduct Product
-	err := db.First(&updatedProduct, productId).Error
-	if err != nil {
-		return err
-	}
+	product.Name = updateTo.Name
+	product.Price = updateTo.Price
+	product.Status = updateTo.Status
 
-	if product.Name != "" {
-		updatedProduct.Name = product.Name
-	}
-	if product.Status != "" {
-		updatedProduct.Status = product.Status
-	}
-	if product.Price != 0 {
-		updatedProduct.Price = product.Price
-	}
+	db.Save(&product)
 
-	db.Save(&updatedProduct)
-
-	return nil
+	return
 }
 
-func DeleteProduct(productId uint) error {
+func DeleteProduct(product *Product) {
 	db := config.GetConnection()
 
-	err := DeleteOrdersByProductId(productId)
-	if err != nil {
-		return err
-	}
+	DeleteOrdersByProductId(product.ID)
 
-	err = db.Unscoped().Delete(&Product{}, productId).Error
-	if err != nil {
-		return err
-	}
+	db.Unscoped().Delete(product)
 
-	return nil
-}
-
-func ProductExists(productId uint) (bool, error) {
-	db := config.GetConnection()
-
-	var product Product
-	err := db.First(&product, productId).Error
-	if err != nil {
-		return false, nil
-	}
-
-	return true, nil
 }

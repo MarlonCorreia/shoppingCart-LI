@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shoppingCart-LI/models"
-	"shoppingCart-LI/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -44,32 +42,18 @@ func GetProduct(c *gin.Context) {
 	}
 	productId, _ := strconv.ParseUint(paramId, 10, 64)
 
-	exist, err := models.ProductExists(uint(productId))
+	product, err := models.GetProduct(uint(productId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server problem",
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
 		})
 		return
 	}
 
-	if exist {
-		product, err := models.GetProduct(uint(productId))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "server problem",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"product": product,
-		})
-		return
-	}
-
-	c.JSON(http.StatusNotFound, gin.H{
-		"message": "product not found",
+	c.JSON(http.StatusOK, gin.H{
+		"product": product,
 	})
+	return
 
 }
 
@@ -95,23 +79,15 @@ func PutProduct(c *gin.Context) {
 	id, _ := strconv.ParseUint(prodId, 10, 64)
 	p.ID = uint(id)
 
-	pex, _ := models.ProductExists(p.ID)
-	if pex {
+	_, err := models.GetProduct(p.ID)
+	if err == nil {
 		c.JSON(http.StatusForbidden, gin.H{
-			"message": "product already created",
+			"message": "product already exists",
 		})
 		return
 	}
 
-	fmt.Println(utils.Jsonfy(p))
-	err := models.CreateProduct(p.ID, p.Name, p.Price, p.Status)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server error",
-		})
-		return
-	}
-
+	models.CreateProduct(p.ID, p.Name, p.Price, p.Status)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product created",
 		"product": p,
@@ -123,31 +99,18 @@ func DeleteProduct(c *gin.Context) {
 	paramId := c.Param("id")
 	productId, _ := strconv.ParseUint(paramId, 10, 32)
 
-	exists, err := models.ProductExists(uint(productId))
+	product, err := models.GetProduct(uint(productId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server problem",
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
 		})
 		return
 	}
+	models.DeleteProduct(&product)
 
-	if exists {
-		err := models.DeleteProduct(uint(productId))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "server problem",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "product deleted",
-		})
-		return
-	}
-
-	c.JSON(http.StatusNotFound, gin.H{
-		"message": "product does not exist",
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product deleted",
 	})
+	return
 
 }

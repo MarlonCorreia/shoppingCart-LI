@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"shoppingCart-LI/models"
@@ -46,10 +45,8 @@ func CreateUser(c *gin.Context) {
 	} else {
 		err := models.CreateUser(u.Name, u.Password)
 		if err != nil {
-			fmt.Println(err)
-
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "problem with user creation",
+				"message": "username taken",
 			})
 		} else {
 			c.JSON(http.StatusOK, gin.H{
@@ -69,33 +66,22 @@ func LoginUser(c *gin.Context) {
 
 	if u.Name == "" || u.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "login failed, empty fields!",
+			"message": "login failed, empty user fields!",
 		})
 		return
 	}
 
-	v, err := models.CheckUserExists(u.Name, u.Password)
-	if err != nil || !v {
-		fmt.Println(err)
+	if !models.CheckUserExists(u.Name, u.Password) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "login failed, user does not exists!",
 		})
 		return
 	}
 
-	token, err := models.GetUserToken(u.Name, u.Password)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "login failed, server problem!",
-		})
-		return
-	} else {
+	token := models.GetUserToken(u.Name, u.Password)
 
-		c.JSON(http.StatusOK, gin.H{
-			"token": token,
-		})
-		return
-	}
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 
 }

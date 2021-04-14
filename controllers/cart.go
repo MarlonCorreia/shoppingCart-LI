@@ -101,40 +101,29 @@ func PostCart(c *gin.Context) {
 		return
 	}
 
-	exists, err := models.ProductExists(uint(productId))
+	cart, err := models.GetCart(uint(cartId))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server error",
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "cart not found",
 		})
 		return
 	}
 
-	if exists {
-		_, err := models.GetCart(uint(cartId))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "server error",
-			})
-			return
-		}
-
-		err = models.AddProductToCart(uint(cartId), uint(productId), int64(amount))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "server error",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "product added to cart",
+	product, err := models.GetProduct(uint(productId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{
-		"message": "product not found",
+	models.AddProductToCart(&cart, &product, int64(amount))
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product added to cart",
 	})
+	return
+
 }
 
 func DeleteCartProduct(c *gin.Context) {
@@ -168,26 +157,36 @@ func DeleteCartProduct(c *gin.Context) {
 	}
 
 	if authorized {
-		exists, _ := models.ProductExists(uint(productId))
-		if exists {
-			err := models.RemoveProductFromnCart(uint(productId), uint(cartId), int64(amount))
-			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{
-					"message": "cart not found",
-				})
-				return
-			}
 
-			c.JSON(http.StatusOK, gin.H{
-				"message": "product removed",
+		cart, err := models.GetCart(uint(cartId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "cart not found",
 			})
 			return
 		}
 
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "product not found",
+		product, err := models.GetProduct(uint(productId))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "product not found",
+			})
+			return
+		}
+
+		err = models.RemoveProductFromnCart(&cart, &product, int64(amount))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "product not on cart",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "product removed",
 		})
 		return
+
 	}
 
 	c.JSON(http.StatusUnauthorized, gin.H{

@@ -10,10 +10,7 @@ import (
 func CreateUser(name string, password string) error {
 	db := config.GetConnection()
 
-	cart, err := CreateCart()
-	if err != nil {
-		return err
-	}
+	cart := CreateCart()
 
 	u := User{
 		Name:     name,
@@ -22,7 +19,10 @@ func CreateUser(name string, password string) error {
 		CartID:   cart.ID,
 		Cart:     cart,
 	}
-	db.Create(&u)
+	err := db.Create(&u).Error
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -41,16 +41,13 @@ func GetUser(userId uint) (User, error) {
 	return user, nil
 }
 
-func GetUserToken(name string, password string) (string, error) {
+func GetUserToken(name string, password string) string {
 	db := config.GetConnection()
 
 	var u User
-	err := db.Where("name = ? AND password = ?", name, password).First(&u).Error
-	if err != nil {
-		return "", nil
-	}
+	db.Where("name = ? AND password = ?", name, password).First(&u)
 
-	return u.Token, nil
+	return u.Token
 
 }
 
@@ -65,16 +62,16 @@ func CheckTokenExists(token string) (bool, error) {
 	return true, nil
 }
 
-func CheckUserExists(name string, password string) (bool, error) {
+func CheckUserExists(name string, password string) bool {
 	db := config.GetConnection()
 
 	var u User
 	err := db.Where("name = ? AND password = ?", name, password).First(&u).Error
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
 func UserCart(db *gorm.DB, userId uint) Cart {

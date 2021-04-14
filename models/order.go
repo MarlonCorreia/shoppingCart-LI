@@ -4,32 +4,29 @@ import (
 	"shoppingCart-LI/config"
 )
 
-func CreateOrder(productId uint) (Order, error) {
+func CreateOrder(product *Product, qty int64) Order {
 	var order Order
 	db := config.GetConnection()
 
-	prod, err := GetProduct(productId)
-	if err != nil {
-		return order, err
-	}
-	order.Quantity = 1
-	order.Product = prod
-	order.ProductID = prod.ID
+	order.Quantity = qty
+	order.Product = *product
+	order.ProductID = product.ID
+
 	db.Create(&order)
 
-	return order, nil
+	return order
 
 }
 
-func DeleteOrder(order *Order) error {
+func DeleteOrder(order *Order) {
 	db := config.GetConnection()
 
 	db.Delete(order)
 
-	return nil
+	return
 }
 
-func DeleteOrdersByProductId(productId uint) error {
+func DeleteOrdersByProductId(productId uint) {
 	db := config.GetConnection()
 
 	var orders []Order
@@ -41,6 +38,5 @@ func DeleteOrdersByProductId(productId uint) error {
 			db.Delete(&v)
 		}
 	}
-	return nil
 
 }

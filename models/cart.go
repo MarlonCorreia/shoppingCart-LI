@@ -1,17 +1,18 @@
 package models
 
 import (
+	"errors"
 	"shoppingCart-LI/config"
 )
 
-func CreateCart() (Cart, error) {
+func CreateCart() Cart {
 	var cart Cart
 
 	db := config.GetConnection()
 
 	db.Create(&cart)
 
-	return cart, nil
+	return cart
 }
 
 func GetCart(cartId uint) (Cart, error) {
@@ -29,89 +30,63 @@ func GetCart(cartId uint) (Cart, error) {
 	return cart, nil
 }
 
-func AddProductToCart(cartId uint, productId uint, qty int64) error {
+func AddProductToCart(cart *Cart, product *Product, qty int64) {
 	db := config.GetConnection()
 
-	exists, err := ProductExists(productId)
-	if err != nil {
-		return err
-	}
-	if exists {
-		var cart Cart
-		db.Find(&cart, cartId)
-		db.Preload("Product").Find(&cart.Orders)
-
-		for _, v := range cart.Orders {
-			if productId == v.Product.ID {
-				v.Quantity = v.Quantity + qty
-				db.Save(&v)
-
-				return nil
-			}
-		}
-
-		order, err := CreateOrder(productId)
-		if err != nil {
-			return err
-		}
-
-		db.Model(&cart).Association("Orders").Append(&order)
-
-	}
-
-	return nil
-}
-
-func RemoveProductFromnCart(productId uint, cartId uint, quantitty int64) error {
-	db := config.GetConnection()
-
-	var cart Cart
-
-	err := db.First(&cart, cartId).Error
 	db.Preload("Product").Find(&cart.Orders)
 
-	if err != nil {
-		return err
+	for _, v := range cart.Orders {
+		if product.ID == v.Product.ID {
+			v.Quantity = v.Quantity + qty
+			db.Save(&v)
+
+			return
+		}
 	}
 
+	order := CreateOrder(product, qty)
+
+	db.Model(&cart).Association("Orders").Append(&order)
+
+	return
+}
+
+func RemoveProductFromnCart(cart *Cart, product *Product, qty int64) error {
+	db := config.GetConnection()
+	db.Preload("Product").Find(&cart.Orders)
+
 	for _, v := range cart.Orders {
-		if v.Product.ID == productId {
-			v.Quantity = v.Quantity - quantitty
+		if v.Product.ID == product.ID {
+			v.Quantity = v.Quantity - qty
 
 			if v.Quantity <= 0 {
 				DeleteOrder(&v)
 
-				return nil
 			}
-
 			db.Save(&v)
+			return nil
 		}
 	}
-
-	return nil
+	err := errors.New("Product not in cart")
+	return err
 }
 
-func CleanCart(cartID uint) error {
+func CleanCart(cart *Cart) {
 	db := config.GetConnection()
 
-	var c Cart
-	db.Preload("Product").Find(&c.Orders)
-	db.Preload("DiscountCoupons").Find(&c)
-	err := db.Find(&c, cartID).Error
-	if err != nil {
-		return err
+	db.Preload("Product").Find(&cart.Orders)
+	db.Preload("DiscountCoupons").Find(&cart)
+
+	for _, v := range cart.Orders {
+		DeleteOrder(&v)
 	}
 
-	for _, v := range c.Orders {
-		err = DeleteOrder(&v)
-		if err != nil {
-			return err
-		}
+	for _, v := range cart.DiscountCoupons {
+		DeleteDiscountCoupon(&v)
 	}
-	db.Delete(&c.DiscountCoupons)
 
-	db.Save(&c)
-	return nil
+	db.Save(&cart)
+	return
 }
 
 func AddDiscountCouponToCart(cart *Cart, coupon *DiscountCoupon) {
