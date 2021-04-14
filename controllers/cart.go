@@ -115,7 +115,7 @@ func DeleteCart(c *gin.Context) {
 
 	models.CleanCart(&cart)
 	c.JSON(http.StatusOK, gin.H{
-		"cart": cart,
+		"cart": cartResponse(cart),
 	})
 
 }
