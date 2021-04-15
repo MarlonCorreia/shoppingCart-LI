@@ -126,12 +126,6 @@ func DeleteCartProduct(c *gin.Context) {
 	productId, _ := strconv.ParseUint(paramProductId, 10, 32)
 	amount, _ := strconv.Atoi(queryAmount)
 
-	if amount <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "amount must be greater than zero",
-		})
-		return
-	}
 	if token == "" {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "no token provided",
