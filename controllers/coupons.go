@@ -39,7 +39,7 @@ func PutCoupon(c *gin.Context) {
 	models.CreateDiscountCoupon(coupon)
 
 	c.JSON(http.StatusOK, gin.H{
-		"coupon": coupon,
+		"message": "coupon created",
 	})
 }
 
