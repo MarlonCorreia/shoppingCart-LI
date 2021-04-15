@@ -27,7 +27,7 @@ type ResponseOrder struct {
 func GetCart(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -36,14 +36,14 @@ func GetCart(c *gin.Context) {
 	cart, err := models.UserCartByToken(token)
 	if err != nil {
 
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Not authorized",
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Data": cartResponse(cart),
+		"cart": cartResponse(cart),
 	})
 	return
 
@@ -52,7 +52,7 @@ func GetCart(c *gin.Context) {
 func PostCart(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -70,8 +70,8 @@ func PostCart(c *gin.Context) {
 
 	cart, err := models.UserCartByToken(token)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Not authorized",
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
 		})
 		return
 	}
@@ -96,7 +96,7 @@ func PostCart(c *gin.Context) {
 func DeleteCart(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -105,8 +105,8 @@ func DeleteCart(c *gin.Context) {
 	cart, err := models.UserCartByToken(token)
 	if err != nil {
 
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Not authorized",
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
 		})
 		return
 	}
@@ -127,7 +127,7 @@ func DeleteCartProduct(c *gin.Context) {
 	amount, _ := strconv.Atoi(queryAmount)
 
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -157,7 +157,7 @@ func DeleteCartProduct(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "product removed",
+		"message": "product removed from cart",
 	})
 	return
 
@@ -170,7 +170,7 @@ func PostCouponCart(c *gin.Context) {
 	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
 
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -207,7 +207,7 @@ func DeleteCouponCart(c *gin.Context) {
 	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
 
 	if token == "" {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotAcceptable, gin.H{
 			"message": "no token provided",
 		})
 		return
@@ -232,7 +232,7 @@ func DeleteCouponCart(c *gin.Context) {
 	models.DeleteDiscountCouponFromCart(cart, &coupon)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "coupon deleted",
+		"message": "coupon deleted from cart",
 	})
 	return
 

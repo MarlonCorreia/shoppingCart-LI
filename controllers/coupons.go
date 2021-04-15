@@ -31,7 +31,7 @@ func PutCoupon(c *gin.Context) {
 
 	if coupon.Name == "" || coupon.Price == 0 {
 		c.JSON(http.StatusNotAcceptable, gin.H{
-			"message": "bad payload",
+			"message": "request body not accepted",
 		})
 		return
 	}

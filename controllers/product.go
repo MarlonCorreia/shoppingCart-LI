@@ -11,14 +11,8 @@ import (
 )
 
 func GetProducts(c *gin.Context) {
-	products, err := models.GetAllProducts()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "server error",
-		})
+	products, _ := models.GetAllProducts()
 
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"products": products,
 	})
@@ -52,20 +46,14 @@ func GetProduct(c *gin.Context) {
 
 func PutProduct(c *gin.Context) {
 	prodId := c.Param("id")
-	if prodId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "no product id provided",
-		})
-		return
-	}
 
 	message, _ := ioutil.ReadAll(c.Request.Body)
 	var p models.Product
 	json.Unmarshal(message, &p)
 
 	if p.Name == "" || p.Status == "" || p.Price == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "missing or empty fields",
+		c.JSON(http.StatusNotAcceptable, gin.H{
+			"message": "request body not accepted",
 		})
 		return
 	}
@@ -83,7 +71,6 @@ func PutProduct(c *gin.Context) {
 	models.CreateProduct(p.ID, p.Name, p.Price, p.Status)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product created",
-		"product": p,
 	})
 
 }
@@ -106,7 +93,7 @@ func PostProduct(c *gin.Context) {
 	}
 	models.UpdateProduct(&product, p)
 	c.JSON(http.StatusOK, gin.H{
-		"product": product,
+		"message": "product updated",
 	})
 
 }
