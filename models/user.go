@@ -51,16 +51,18 @@ func GetUserToken(name string, password string) string {
 
 }
 
-func CheckTokenExists(token string, cartId uint) bool {
+func UserCartByToken(token string) (*Cart, error) {
 	db := config.GetConnection()
 	var user User
 
 	err := db.Where("token = ?", token).First(&user).Error
-	if err != nil || user.CartID != cartId {
-		return false
+	if err != nil {
+		return &user.Cart, err
 	}
+	db.Preload("Product").Find(&user.Cart.Orders)
+	db.Preload("DiscountCoupons").Find(&user.Cart)
 
-	return true
+	return &user.Cart, nil
 }
 
 func CheckUserExists(name string, password string) bool {

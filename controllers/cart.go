@@ -32,23 +32,21 @@ func GetCart(c *gin.Context) {
 		})
 		return
 	}
-	paramcartId := c.Param("id")
-	cartId, _ := strconv.ParseUint(paramcartId, 10, 64)
 
-	authorized := models.CheckTokenExists(token, uint(cartId))
-	if authorized {
+	cart, err := models.UserCartByToken(token)
+	if err != nil {
 
-		cart, _ := models.GetCart(uint(cartId))
-		c.JSON(http.StatusOK, gin.H{
-			"Data": cartResponse(cart),
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Not authorized",
 		})
 		return
-
 	}
 
-	c.JSON(http.StatusForbidden, gin.H{
-		"message": "Not authorized",
+	c.JSON(http.StatusOK, gin.H{
+		"Data": cartResponse(cart),
 	})
+	return
+
 }
 
 func PostCart(c *gin.Context) {
@@ -60,25 +58,20 @@ func PostCart(c *gin.Context) {
 		return
 	}
 
-	paramCartId := c.Param("id")
 	paramProductId := c.Param("productId")
 	queryAmount := c.Query("amount")
 
 	productId, _ := strconv.ParseUint(paramProductId, 10, 32)
-	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
 	amount, _ := strconv.Atoi(queryAmount)
 
 	if amount <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "amount must be greater than zero",
-		})
-		return
+		amount = 1
 	}
 
-	cart, err := models.GetCart(uint(cartId))
+	cart, err := models.UserCartByToken(token)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "cart not found",
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Not authorized",
 		})
 		return
 	}
@@ -91,7 +84,7 @@ func PostCart(c *gin.Context) {
 		return
 	}
 
-	models.AddProductToCart(&cart, &product, int64(amount))
+	models.AddProductToCart(cart, &product, int64(amount))
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "product added to cart",
@@ -101,19 +94,24 @@ func PostCart(c *gin.Context) {
 }
 
 func DeleteCart(c *gin.Context) {
-	paramId := c.Param("id")
-
-	cartId, _ := strconv.ParseUint(paramId, 0, 32)
-
-	cart, err := models.GetCart(uint(cartId))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "cart not found",
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no token provided",
 		})
 		return
 	}
 
-	models.CleanCart(&cart)
+	cart, err := models.UserCartByToken(token)
+	if err != nil {
+
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Not authorized",
+		})
+		return
+	}
+
+	models.CleanCart(cart)
 	c.JSON(http.StatusOK, gin.H{
 		"cart": cartResponse(cart),
 	})
@@ -122,12 +120,10 @@ func DeleteCart(c *gin.Context) {
 
 func DeleteCartProduct(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
-	paramCartId := c.Param("id")
 	paramProductId := c.Param("productId")
 	queryAmount := c.Query("amount")
 
 	productId, _ := strconv.ParseUint(paramProductId, 10, 32)
-	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
 	amount, _ := strconv.Atoi(queryAmount)
 
 	if amount <= 0 {
@@ -143,50 +139,40 @@ func DeleteCartProduct(c *gin.Context) {
 		return
 	}
 
-	if models.CheckTokenExists(token, uint(cartId)) {
-
-		cart, err := models.GetCart(uint(cartId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "cart not found",
-			})
-			return
-		}
-
-		product, err := models.GetProduct(uint(productId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "product not found",
-			})
-			return
-		}
-
-		err = models.RemoveProductFromnCart(&cart, &product, int64(amount))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "product not on cart",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "product removed",
+	cart, err := models.UserCartByToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
 		})
-		return
-
 	}
 
-	c.JSON(http.StatusUnauthorized, gin.H{
-		"message": "not authorized",
+	product, err := models.GetProduct(uint(productId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not found",
+		})
+		return
+	}
+
+	err = models.RemoveProductFromnCart(cart, &product, int64(amount))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "product not on cart",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "product removed",
 	})
+	return
+
 }
 
 func PostCouponCart(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
-	paramCartId := c.Param("id")
 	paramCouponId := c.Param("couponId")
 
-	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
 	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
 
 	if token == "" {
@@ -196,42 +182,34 @@ func PostCouponCart(c *gin.Context) {
 		return
 	}
 
-	if models.CheckTokenExists(token, uint(cartId)) {
-		cart, err := models.GetCart(uint(cartId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "cart not found",
-			})
-			return
-		}
+	cart, err := models.UserCartByToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
+		})
+	}
 
-		coupon, err := models.GetDiscountCoupon(uint(couponId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "coupon not found",
-			})
-			return
-		}
-
-		models.AddDiscountCouponToCart(&cart, &coupon)
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "coupon added to cart",
+	coupon, err := models.GetDiscountCoupon(uint(couponId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "coupon not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusUnauthorized, gin.H{
-		"message": "not authorized",
+	models.AddDiscountCouponToCart(cart, &coupon)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "coupon added to cart",
 	})
+	return
+
 }
 
 func DeleteCouponCart(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
-	paramCartId := c.Param("id")
 	paramCouponId := c.Param("couponId")
 
-	cartId, _ := strconv.ParseUint(paramCartId, 10, 32)
 	couponId, _ := strconv.ParseUint(paramCouponId, 10, 32)
 
 	if token == "" {
@@ -241,39 +219,32 @@ func DeleteCouponCart(c *gin.Context) {
 		return
 	}
 
-	if models.CheckTokenExists(token, uint(cartId)) {
-		cart, err := models.GetCart(uint(cartId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "cart not found",
-			})
-			return
-		}
-
-		coupon, err := models.GetDiscountCoupon(uint(couponId))
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "coupon not found",
-			})
-			return
-		}
-
-		models.DeleteDiscountCouponFromCart(&cart, &coupon)
-
-		c.JSON(http.StatusOK, gin.H{
-			"message": "coupon deleted",
+	cart, err := models.UserCartByToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "not authorized",
 		})
 		return
-
 	}
 
-	c.JSON(http.StatusUnauthorized, gin.H{
-		"message": "not authorized",
+	coupon, err := models.GetDiscountCoupon(uint(couponId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "coupon not found",
+		})
+		return
+	}
+
+	models.DeleteDiscountCouponFromCart(cart, &coupon)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "coupon deleted",
 	})
+	return
 
 }
 
-func cartResponse(cart models.Cart) ResponseCart {
+func cartResponse(cart *models.Cart) ResponseCart {
 	var responseOrders []ResponseOrder
 	var total float64
 
