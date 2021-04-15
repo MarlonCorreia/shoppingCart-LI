@@ -35,7 +35,7 @@ type Cart struct {
 type User struct {
 	gorm.Model `json:"-"`
 	ID         uint   `json:"id"`
-	Name       string `json:"name"`
+	Name       string `json:"name" gorm:"unique"`
 	Password   string `json:"password"`
 	Token      string `json:"-"`
 	CartID     uint   `json:"cartId"`
