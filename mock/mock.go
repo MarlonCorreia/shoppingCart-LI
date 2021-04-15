@@ -31,7 +31,7 @@ func InputMockedInfo() {
 		ID:     13345,
 		Name:   "Iphone 11 32GB",
 		Price:  4500,
-		Status: "Availablle",
+		Status: "Available",
 	}
 	db.Create(&product1)
 
@@ -39,7 +39,7 @@ func InputMockedInfo() {
 		ID:     44567,
 		Name:   "Motorola Moto 65s",
 		Price:  2100,
-		Status: "Availablle",
+		Status: "Available",
 	}
 	db.Create(&product2)
 
@@ -47,7 +47,7 @@ func InputMockedInfo() {
 		ID:     55678,
 		Name:   "Samsung Galaxy S11",
 		Price:  3000,
-		Status: "Availablle",
+		Status: "Available",
 	}
 	db.Create(&product3)
 
@@ -55,7 +55,7 @@ func InputMockedInfo() {
 		ID:     6678,
 		Name:   "Xiaomi Mi Mix",
 		Price:  2600,
-		Status: "Availablle",
+		Status: "Available",
 	}
 	db.Create(&product4)
 
@@ -63,7 +63,7 @@ func InputMockedInfo() {
 		ID:     99234,
 		Name:   "LG 65 64GB",
 		Price:  1800,
-		Status: "Availablle",
+		Status: "Available",
 	}
 	db.Create(&product5)
 
