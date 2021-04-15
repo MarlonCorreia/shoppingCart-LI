@@ -57,6 +57,9 @@ func RemoveProductFromnCart(cart *Cart, product *Product, qty int64) error {
 
 	for _, v := range cart.Orders {
 		if v.Product.ID == product.ID {
+			if qty <= 0 {
+				qty = v.Quantity
+			}
 			v.Quantity = v.Quantity - qty
 
 			if v.Quantity <= 0 {

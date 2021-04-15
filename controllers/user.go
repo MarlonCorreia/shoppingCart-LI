@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"shoppingCart-LI/models"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,10 +15,15 @@ type User struct {
 }
 
 func GetUser(c *gin.Context) {
-	paramId := c.Param("id")
-	userId, _ := strconv.ParseUint(paramId, 10, 32)
-	user, err := models.GetUser(uint(userId))
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no token provided",
+		})
+		return
+	}
 
+	user, err := models.GetUserByToken(token)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "user not found",
