@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"shoppingCart-LI/config"
+	"shoppingCart-LI/mock"
 	"shoppingCart-LI/models"
 	"shoppingCart-LI/server"
 )
@@ -23,6 +24,8 @@ func main() {
 	}
 
 	config.ApllyMigrations(schema)
+
+	mock.InputMockedInfo()
 
 	server.RunServer()
 
