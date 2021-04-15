@@ -27,13 +27,11 @@ func CreateUser(name string, password string) error {
 	return nil
 }
 
-func GetUser(userId uint) (User, error) {
+func GetUserByToken(token string) (User, error) {
 	db := config.GetConnection()
 
 	var user User
-	err := db.First(&user, userId).Error
-	db.Preload("Cart").Find(&user)
-
+	err := db.Where("token = ?", token).First(&user).Error
 	if err != nil {
 		return user, err
 	}
