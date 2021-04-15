@@ -57,7 +57,7 @@ func UserCartByToken(token string) (*Cart, error) {
 	if err != nil {
 		return &user.Cart, err
 	}
-	db.Preload("Product").Find(&user.Cart.Orders)
+	db.Preload("Cart.Orders.Product").Find(&user)
 	db.Preload("DiscountCoupons").Find(&user.Cart)
 
 	return &user.Cart, nil

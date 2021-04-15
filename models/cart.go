@@ -24,7 +24,7 @@ func GetCart(cartId uint) (Cart, error) {
 		return cart, err
 	}
 
-	db.Preload("Product").Find(&cart.Orders)
+	db.Preload("Orders.Product").Find(&cart)
 	db.Preload("DiscountCoupons").Find(&cart)
 
 	return cart, nil
@@ -33,7 +33,7 @@ func GetCart(cartId uint) (Cart, error) {
 func AddProductToCart(cart *Cart, product *Product, qty int64) {
 	db := config.GetConnection()
 
-	db.Preload("Product").Find(&cart.Orders)
+	db.Preload("Orders.Product").Find(&cart)
 
 	for _, v := range cart.Orders {
 		if product.ID == v.Product.ID {
@@ -53,7 +53,7 @@ func AddProductToCart(cart *Cart, product *Product, qty int64) {
 
 func RemoveProductFromnCart(cart *Cart, product *Product, qty int64) error {
 	db := config.GetConnection()
-	db.Preload("Product").Find(&cart.Orders)
+	db.Preload("Orders.Product").Find(&cart)
 
 	for _, v := range cart.Orders {
 		if v.Product.ID == product.ID {
@@ -77,7 +77,7 @@ func RemoveProductFromnCart(cart *Cart, product *Product, qty int64) error {
 func CleanCart(cart *Cart) {
 	db := config.GetConnection()
 
-	db.Preload("Product").Find(&cart.Orders)
+	db.Preload("Orders.Product").Find(&cart)
 	db.Preload("DiscountCoupons").Find(&cart)
 
 	for _, v := range cart.Orders {
